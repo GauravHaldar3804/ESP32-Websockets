@@ -63,13 +63,17 @@ void handleMessage( uint8_t *payload){
     return;
   }
 
-    if(strcmp(doc["type"]["body"],"pinMode") == 0){
-    pinMode(doc["body"]["pin"], toMode(doc["body"]["mode"]));
+    if(strcmp(doc["type"]["body"],"digitalWrite") == 0){
+    digitalWrite(doc["body"]["pin"], doc["body"]["mode"]);
     return;
     }
 
-    if(strcmp(doc["type"]["body"],"pinMode") == 0){
-    pinMode(doc["body"]["pin"], toMode(doc["body"]["mode"]));
+    if(strcmp(doc["type"]["body"],"digitalRead") == 0){
+    auto value = digitalRead(doc["body"]["pin"]);
+    char msg[MSG_SIZE];
+
+    sprintf(msg, "{\"action\":\"msg\",\"type\":\"output\",\"body\":%d}", value);
+    wsClient.sendTXT(msg);
     return;
   }
 }
