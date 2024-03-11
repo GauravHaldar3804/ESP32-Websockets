@@ -2,9 +2,9 @@
 #include <WiFiMulti.h>
 #include <ArduinoJson.h>
 #include <WebSocketsClient.h>
+#include <WifiCredentials.h>
 
-#define WIFI_SSID "Billu"
-#define WIFI_PASSWORD "haldarfamily4321"
+
 #define WS_HOST ""
 #define WS_PORT 443
 #define WS_URL ""
@@ -16,6 +16,18 @@
 WiFiMulti wifiMulti;
 WebSocketsClient wsClient;
 
+uint8_t   toMode(const char *val){
+
+  if (strcmp(val,"output") == 0)
+    return OUTPUT;
+
+    if (strcmp(val,"input_pullup") == 0)
+    return INPUT_PULLUP;
+
+    if (strcmp(val,"input") == 0)
+    return INPUT;
+}
+
 void sendErrorMessage(const char *error){
   char msg[MSG_SIZE];
 
@@ -24,7 +36,7 @@ void sendErrorMessage(const char *error){
 }
 
 void handleMessage( uint8_t *payload){
-  JsonDocument<JSON_DOC_SIZE> doc;
+  JsonDocument doc;
 
    DeserializationError error = deserializeJson(doc, payload);
 
@@ -32,22 +44,33 @@ void handleMessage( uint8_t *payload){
   if (error) {
     Serial.print(F("deserializeJson() failed: "));
     Serial.println(error.f_str());
-    sendErrorMessage(error.c_str())
+    sendErrorMessage(error.c_str());
     return;
   }
-  if(!doc["type"].is<const char *()>){
+  if(!doc["type"].is<const char *>()){
     sendErrorMessage("Invalid Message Type");
+    return;
   }
   if(strcmp(doc["type"],"cmd") == 0){
     if(!doc["body"].is<JsonObject>()){
-      sendErrorMessage("Invalid Body Command")
+      sendErrorMessage("Invalid Body Command");
+      return;
     }
   }
 
   if(strcmp(doc["type"]["body"],"pinMode") == 0){
+    pinMode(doc["body"]["pin"], toMode(doc["body"]["mode"]));
+    return;
+  }
 
-    
+    if(strcmp(doc["type"]["body"],"pinMode") == 0){
+    pinMode(doc["body"]["pin"], toMode(doc["body"]["mode"]));
+    return;
+    }
 
+    if(strcmp(doc["type"]["body"],"pinMode") == 0){
+    pinMode(doc["body"]["pin"], toMode(doc["body"]["mode"]));
+    return;
   }
 }
 void onWSevent(WStype_t type, uint8_t *payload, size_t length){
@@ -69,7 +92,7 @@ void setup() {
   Serial.begin(921600);
   pinMode( LED_BUILTIN , OUTPUT);
 
-  wifiMulti.addAP( WIFI_SSID , WIFI_PASSWORD );
+  wifiMulti.addAP( SSID , Password );
 
 while(wifiMulti.run()!= WL_CONNECTED){
   Serial.print(".");
