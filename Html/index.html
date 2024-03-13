@@ -1,0 +1,26 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Two Buttons and a Slider</title>
+</head>
+<body>
+  <h1>Control Panel</h1>
+  <button id="button1">Button 1</button>
+  <button id="button2">Button 2</button>
+  <br>
+  <label for="slider">Value:</label>
+  <input type="range" min="0" max="100" value="50" id="slider">
+  <span id="slider-value">50</span>
+
+  <script>
+    const slider = document.getElementById('slider');
+    const sliderValue = document.getElementById('slider-value');
+
+    slider.oninput = function() {
+      sliderValue.textContent = this.value;
+    }
+  </script>
+</body>
+</html>

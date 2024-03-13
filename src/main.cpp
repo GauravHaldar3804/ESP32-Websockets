@@ -2,7 +2,7 @@
 #include <WiFiMulti.h>
 #include <ArduinoJson.h>
 #include <WebSocketsClient.h>
-#include <WifiCredentials.h>
+#include <WiFiCredentials.h>
 
 
 #define WS_HOST ""
@@ -16,6 +16,10 @@
 WiFiMulti wifiMulti;
 WebSocketsClient wsClient;
 
+
+
+
+
 uint8_t   toMode(const char *val){
 
   if (strcmp(val,"output") == 0)
@@ -28,6 +32,10 @@ uint8_t   toMode(const char *val){
     return INPUT;
 }
 
+
+
+
+
 void sendErrorMessage(const char *error){
   char msg[MSG_SIZE];
 
@@ -35,6 +43,12 @@ void sendErrorMessage(const char *error){
   wsClient.sendTXT(msg);
 }
 
+
+
+
+void sendOKMessage(){
+  wsClient.sendTXT("{\"action\":\"msg\",\"type\":\"status\",\"body\":\"ok\"}");
+}
 void handleMessage( uint8_t *payload){
   JsonDocument doc;
 
@@ -56,15 +70,17 @@ void handleMessage( uint8_t *payload){
       sendErrorMessage("Invalid Body Command");
       return;
     }
-  }
+  
 
   if(strcmp(doc["type"]["body"],"pinMode") == 0){
     pinMode(doc["body"]["pin"], toMode(doc["body"]["mode"]));
+    sendOKMessage();
     return;
   }
 
     if(strcmp(doc["type"]["body"],"digitalWrite") == 0){
     digitalWrite(doc["body"]["pin"], doc["body"]["mode"]);
+    sendOKMessage();
     return;
     }
 
@@ -76,7 +92,14 @@ void handleMessage( uint8_t *payload){
     wsClient.sendTXT(msg);
     return;
   }
+    sendErrorMessage("Unsupported command");
+  }
+  sendErrorMessage("Unsupported Message type");
 }
+
+
+
+
 void onWSevent(WStype_t type, uint8_t *payload, size_t length){
 
 switch(type){
@@ -92,6 +115,10 @@ switch(type){
 }
 }
 
+
+
+
+
 void setup() {
   Serial.begin(921600);
   pinMode( LED_BUILTIN , OUTPUT);
@@ -106,6 +133,10 @@ Serial.print("Connected");
 wsClient.beginSSL(WS_HOST,WS_PORT,WS_URL,"","wss");
 wsClient.onEvent(onWSevent);
 }
+
+
+
+
 
 void loop() {
   digitalWrite(LED_BUILTIN, WiFi.status() == WL_CONNECTED);
